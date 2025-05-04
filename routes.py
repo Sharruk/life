@@ -97,22 +97,11 @@ def register():
             
             # If user role is restaurant, create restaurant entry
             if role == 'restaurant':
-                # Validate license key
-                license_key = request.form.get('license_key')
-                valid_keys = ['SSN-REST-2025', 'TN-FSSAI-1234567', 'TN-FSSAI-2345678']
-                
-                if license_key not in valid_keys:
-                    db.session.rollback()
-                    flash('Invalid License Key. Registration Denied.', 'danger')
-                    return redirect(url_for('register'))
-                    
                 restaurant = Restaurant(
                     owner_id=new_user.id,
                     name=f"{name}'s Restaurant",
                     address=address or "Address not provided",
-                    phone=phone or "Phone not provided",
-                    license_key=license_key,
-                    is_verified=True
+                    phone=phone or "Phone not provided"
                 )
                 db.session.add(restaurant)
                 db.session.commit()
