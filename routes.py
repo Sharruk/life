@@ -118,21 +118,30 @@ def edit_profile():
     error = None
     
     if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
         phone = request.form.get('phone')
         address = request.form.get('address')
         
-        if not phone or not address:
-            error = 'Both phone and address are required.'
+        if not all([username, email, phone, address]):
+            error = 'All fields are required.'
         else:
-            current_user.phone = phone
-            current_user.address = address
-            current_user.is_profile_complete = True
-            db.session.commit()
-            
-            flash('Profile updated successfully!', 'success')
-            return redirect(url_for('user_dashboard'))
+            # Check if email already exists for another user
+            existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
+            if existing_user:
+                error = 'Email already exists. Please use a different email.'
+            else:
+                current_user.username = username
+                current_user.email = email
+                current_user.phone = phone
+                current_user.address = address
+                current_user.is_profile_complete = True
+                db.session.commit()
+                
+                flash('Profile updated successfully!', 'success')
+                return redirect(url_for('user_dashboard'))
     
-    return render_template('complete_profile.html', error=error, form=form, user=current_user)
+    return render_template('edit_profile.html', error=error, form=form, user=current_user)
 
 @app.route('/complete-profile', methods=['GET', 'POST'])
 @login_required
