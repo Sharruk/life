@@ -43,6 +43,8 @@ class Restaurant(db.Model):
     image_url = db.Column(db.String(255), nullable=True)
     rating = db.Column(db.Float, default=0.0)
     is_open = db.Column(db.Boolean, default=True)
+    license_key = db.Column(db.String(50), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
