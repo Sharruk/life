@@ -43,7 +43,6 @@ class Restaurant(db.Model):
     image_url = db.Column(db.String(255), nullable=True)
     rating = db.Column(db.Float, default=0.0)
     is_open = db.Column(db.Boolean, default=True)
-    upi_id = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
