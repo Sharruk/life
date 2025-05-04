@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -11,17 +12,7 @@
                 <div class="card-body">
                     <form method="POST" id="payment-form">
                         {{ form.hidden_tag() }}
-
-                        <!-- Address Section -->
-                        <div class="mb-4">
-                            <h6 class="mb-3">Delivery Address</h6>
-                            <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input" id="use-profile-address" checked>
-                                <label class="form-check-label" for="use-profile-address">Use my profile address</label>
-                            </div>
-                            <textarea class="form-control" name="delivery_address" rows="2" readonly>{{ current_user.address }}</textarea>
-                        </div>
-
+                        
                         <!-- Payment Methods -->
                         <div class="mb-4">
                             <h6 class="mb-3">Select Payment Method</h6>
@@ -34,14 +25,14 @@
                                 </label>
                                 <div id="card-details" class="payment-details mt-2 ms-4 d-none">
                                     <div class="mb-3">
-                                        <input type="text" class="form-control" placeholder="Card Number">
+                                        <input type="text" class="form-control" id="card-number" placeholder="Card Number" pattern="[0-9\s]{13,19}">
                                     </div>
                                     <div class="row">
                                         <div class="col-6">
-                                            <input type="text" class="form-control" placeholder="MM/YY">
+                                            <input type="text" class="form-control" id="card-expiry" placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/([0-9]{2})">
                                         </div>
                                         <div class="col-6">
-                                            <input type="text" class="form-control" placeholder="CVV">
+                                            <input type="text" class="form-control" id="card-cvc" placeholder="CVV" pattern="[0-9]{3,4}">
                                         </div>
                                     </div>
                                 </div>
@@ -55,27 +46,28 @@
                                 </label>
                                 <div id="upi-details" class="payment-details mt-2 ms-4 d-none">
                                     <div class="mb-3">
-                                        <div class="alert alert-info">
-                                            Please pay ₹{{ total }} to <strong>{{ restaurant.name.lower().replace(' ', '') }}@upi</strong>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Select UPI App</label>
-                                            <div class="d-flex gap-3">
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="upi_app" value="gpay">
-                                                    <label class="form-check-label">Google Pay</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="upi_app" value="phonepe">
-                                                    <label class="form-check-label">PhonePe</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="upi_app" value="bhim">
-                                                    <label class="form-check-label">BHIM UPI</label>
-                                                </div>
+                                        <label class="form-label">Select UPI App</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="upi_app" value="bhim">
+                                                <label class="form-check-label">BHIM UPI</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="upi_app" value="gpay">
+                                                <label class="form-check-label">Google Pay</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="upi_app" value="phonepe">
+                                                <label class="form-check-label">PhonePe</label>
                                             </div>
                                         </div>
-                                        <input type="text" class="form-control" name="transaction_id" placeholder="Enter UPI Transaction ID">
+                                    </div>
+                                    <div class="alert alert-info">
+                                        Please pay ₹{{ total }} to <strong>{{ restaurant.name.lower().replace(' ', '') }}@upi</strong>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Enter UPI Transaction ID</label>
+                                        <input type="text" class="form-control" name="transaction_id" id="upi-transaction-id" minlength="12" pattern="[a-zA-Z0-9]{12,}" placeholder="Enter 12+ character Transaction ID">
                                         <div class="form-text">Transaction ID must be at least 12 characters</div>
                                     </div>
                                 </div>
@@ -92,13 +84,14 @@
                                         <label class="form-label">Select Wallet</label>
                                         <select class="form-select mb-3" name="wallet_type">
                                             <option value="paytm">Paytm</option>
-                                            <option value="amazonpay">Amazon Pay</option>
                                             <option value="phonepe">PhonePe</option>
+                                            <option value="amazonpay">Amazon Pay</option>
                                         </select>
                                         <div class="alert alert-info">
                                             Send ₹{{ total }} to wallet ID: <strong>{{ restaurant.name.lower().replace(' ', '') }}-pay123</strong>
                                         </div>
-                                        <input type="text" class="form-control" name="transaction_id" placeholder="Enter Wallet Transaction ID">
+                                        <label class="form-label">Enter Wallet Transaction ID</label>
+                                        <input type="text" class="form-control" name="wallet_transaction_id" id="wallet-transaction-id" minlength="12" pattern="[a-zA-Z0-9]{12,}" placeholder="Enter 12+ character Transaction ID">
                                         <div class="form-text">Transaction ID must be at least 12 characters</div>
                                     </div>
                                 </div>
@@ -167,10 +160,11 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Show/hide payment details based on selection
+    const form = document.getElementById('payment-form');
     const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
     const paymentDetails = document.querySelectorAll('.payment-details');
 
+    // Show/hide payment details based on selection
     paymentMethods.forEach(method => {
         method.addEventListener('change', function() {
             paymentDetails.forEach(detail => detail.classList.add('d-none'));
@@ -182,15 +176,57 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form validation
-    const form = document.getElementById('payment-form');
     form.addEventListener('submit', function(e) {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
 
-        if (selectedMethod.value === 'upi' || selectedMethod.value === 'wallet') {
-            const transactionId = this.querySelector('input[name="transaction_id"]').value;
-            if (transactionId.length < 12 || !transactionId.match(/^[a-zA-Z0-9]+$/)) {
+        if (selectedMethod.value === 'upi') {
+            const upiApp = document.querySelector('input[name="upi_app"]:checked');
+            const transactionId = document.getElementById('upi-transaction-id').value;
+
+            if (!upiApp) {
+                e.preventDefault();
+                alert('Please select a UPI app');
+                return;
+            }
+
+            if (!transactionId.match(/^[a-zA-Z0-9]{12,}$/)) {
                 e.preventDefault();
                 alert('Please enter a valid transaction ID (at least 12 alphanumeric characters)');
+                return;
+            }
+        }
+
+        if (selectedMethod.value === 'wallet') {
+            const transactionId = document.getElementById('wallet-transaction-id').value;
+            
+            if (!transactionId.match(/^[a-zA-Z0-9]{12,}$/)) {
+                e.preventDefault();
+                alert('Please enter a valid transaction ID (at least 12 alphanumeric characters)');
+                return;
+            }
+        }
+
+        if (selectedMethod.value === 'card') {
+            const cardNumber = document.getElementById('card-number').value;
+            const cardExpiry = document.getElementById('card-expiry').value;
+            const cardCvc = document.getElementById('card-cvc').value;
+
+            if (!cardNumber.match(/^[0-9\s]{13,19}$/)) {
+                e.preventDefault();
+                alert('Please enter a valid card number');
+                return;
+            }
+
+            if (!cardExpiry.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)) {
+                e.preventDefault();
+                alert('Please enter a valid expiry date (MM/YY)');
+                return;
+            }
+
+            if (!cardCvc.match(/^[0-9]{3,4}$/)) {
+                e.preventDefault();
+                alert('Please enter a valid CVV');
+                return;
             }
         }
     });

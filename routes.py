@@ -1158,13 +1158,32 @@ def payment_checkout():
     if request.method == 'POST':
         payment_method = request.form.get('payment_method', 'cod')
         delivery_address = request.form.get('delivery_address', current_user.address)
-        transaction_id = request.form.get('transaction_id')
         
-        # Verify transaction ID for UPI and wallet payments
-        if payment_method in ['upi', 'wallet'] and transaction_id:
-            if len(transaction_id) < 12 or not transaction_id.isalnum():
-                flash('Invalid transaction ID. Please try again.', 'danger')
+        # Process different payment methods
+        if payment_method == 'upi':
+            upi_app = request.form.get('upi_app')
+            transaction_id = request.form.get('transaction_id')
+            
+            if not upi_app:
+                flash('Please select a UPI app.', 'danger')
                 return redirect(url_for('payment_checkout'))
+                
+            if not transaction_id or len(transaction_id) < 12 or not transaction_id.isalnum():
+                flash('Invalid transaction ID. Please enter at least 12 alphanumeric characters.', 'danger')
+                return redirect(url_for('payment_checkout'))
+                
+        elif payment_method == 'wallet':
+            wallet_type = request.form.get('wallet_type')
+            transaction_id = request.form.get('wallet_transaction_id')
+            
+            if not transaction_id or len(transaction_id) < 12 or not transaction_id.isalnum():
+                flash('Invalid transaction ID. Please enter at least 12 alphanumeric characters.', 'danger')
+                return redirect(url_for('payment_checkout'))
+                
+        elif payment_method == 'card':
+            # In a real app, this would integrate with a payment gateway
+            # For demo, we'll simulate successful card payment
+            pass
         
         restaurant_id = session.get('restaurant_id')
         cart_items = session.get('cart', [])
