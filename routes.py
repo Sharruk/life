@@ -111,6 +111,29 @@ def register():
     
     return render_template('register.html', error=error, form=form)
 
+@app.route('/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = CompleteProfileForm()
+    error = None
+    
+    if request.method == 'POST':
+        phone = request.form.get('phone')
+        address = request.form.get('address')
+        
+        if not phone or not address:
+            error = 'Both phone and address are required.'
+        else:
+            current_user.phone = phone
+            current_user.address = address
+            current_user.is_profile_complete = True
+            db.session.commit()
+            
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('user_dashboard'))
+    
+    return render_template('complete_profile.html', error=error, form=form, user=current_user)
+
 @app.route('/complete-profile', methods=['GET', 'POST'])
 @login_required
 def complete_profile():
