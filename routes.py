@@ -872,7 +872,10 @@ def update_order_status():
     if not order_id or not status:
         return jsonify({'success': False, 'message': 'Invalid request'}), 400
     
+    print(f"Before query: Order {order_id} status: {status}")
+
     order = Order.query.get_or_404(order_id)
+    print(f"After query: Order {order_id} status: {order.status}, requested status: {status}, order: {order}")
     
     # Restaurant marking order as ready or cancelled
     if current_user.role == 'restaurant':
@@ -880,8 +883,10 @@ def update_order_status():
         if order.restaurant_id != restaurant.id:
             return jsonify({'success': False, 'message': 'Unauthorized'}), 403
         
+        print(f"Restaurant {restaurant.id} updating order {order_id} to status {status} order status {order.status}")
         # Valid status transitions for restaurant
         valid_transitions = {
+            
             'pending': ['preparing', 'ready', 'cancelled'],
             'preparing': ['ready', 'cancelled'],
             'ready': ['cancelled']
@@ -911,7 +916,10 @@ def update_order_status():
     
     # Delivery partner accepting order
     elif current_user.role == 'delivery':
-        if status == 'picking' and order.status == 'ready_for_pickup':
+        
+        print(f"Delivery partner {current_user.id} updating order {order_id} to status {status} order status {order.status}")
+
+        if status == 'picking' and order.status == 'ready':#_for_pickup':
             if order.delivery_partner_id:
                 return jsonify({'success': False, 'message': 'Order already assigned'}), 400
             
@@ -919,6 +927,7 @@ def update_order_status():
             order.status = 'picking'
             db.session.commit()
             
+            print(f"Order {order_id} assigned to delivery partner {current_user.id}")
             # Generate restaurant location link
             restaurant = order.restaurant
             maps_link = f"https://www.google.com/maps/dir/?api=1&destination={restaurant.address}"
@@ -930,7 +939,7 @@ def update_order_status():
             })
         
         # Delivery partner picked up order
-        elif status == 'delivering' and order.status == 'picking':
+        if status == 'order_received' and order.status == 'picking':
             if order.delivery_partner_id != current_user.id:
                 return jsonify({'success': False, 'message': 'Unauthorized'}), 403
             
@@ -938,16 +947,23 @@ def update_order_status():
             db.session.commit()
             
             # Generate customer location link
+            import webbrowser
+
+            # Construct the Google Maps link
             maps_link = f"https://www.google.com/maps/dir/?api=1&destination={order.delivery_address}"
-            
+
+            # Open in a new browser tab
+            webbrowser.open_new_tab(maps_link)
+
             return jsonify({
                 'success': True,
                 'message': 'Order picked up, proceed to delivery',
                 'maps_link': maps_link
             })
+
         
         # Mark order as delivered
-        elif status == 'completed' and order.status == 'delivering':
+        if status == 'completed' and order.status == 'delivering':
             if order.delivery_partner_id != current_user.id:
                 return jsonify({'success': False, 'message': 'Unauthorized'}), 403
             
@@ -961,6 +977,7 @@ def update_order_status():
             })
     
     return jsonify({'success': False, 'message': 'Invalid status transition'}), 400
+    
     data = request.json
     order_id = data.get('order_id')
     status = data.get('status')

@@ -435,8 +435,8 @@ function initDeliveryTracking(orderId, isDeliveryPartner = false) {
     
     // Add customer marker to map
     function addCustomerMarker(position) {
-        if (!map) return;
-        
+        // if (!map) return;
+        window.open(`https://maps.google.com/?q=${position.lat},${position.lng}`, '_blank');
         customerMarker = new google.maps.Marker({
             position: new google.maps.LatLng(position.lat, position.lng),
             map: map,

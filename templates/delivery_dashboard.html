@@ -258,21 +258,22 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log({data})     
                 if (data.success) {
-                    // Get current location and navigate to restaurant
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(position => {
-                            const currentLat = position.coords.latitude;
-                            const currentLng = position.coords.longitude;
-                            const mapsUrl = `https://www.google.com/maps/dir/${currentLat},${currentLng}/${encodeURIComponent(restaurantAddress)}`;
-                            window.open(mapsUrl, '_blank');
-                            location.reload(); // Refresh the dashboard
-                        });
-                    } else {
+                    // Get current location and navigate to restaurant 
+                    // if (navigator.geolocation) {
+                    //     navigator.geolocation.getCurrentPosition(position => {
+                    //         const currentLat = position.coords.latitude;
+                    //         const currentLng = position.coords.longitude;
+                            // const mapsUrl = `https://www.google.com/maps/dir/${currentLat},${currentLng}/${encodeURIComponent(restaurantAddress)}`;
+                            window.open(data.maps_link,"_blank" );
+                    //         location.reload(); // Refresh the dashboard
+                    //     });
+                    // } else {
                         // Fallback if geolocation is not available
-                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurantAddress)}`, '_blank');
+                        // window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurantAddress)}`, '_blank');
                         location.reload();
-                    }
+                    // }
                 } else {
                     alert(data.message || 'Error updating order status.');
                 }
@@ -318,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Display success message
                 alert(data.message);
+                window.open(data.maps_link,"_blank" );
                 
                 // Refresh the page after a short delay
                 setTimeout(() => {
