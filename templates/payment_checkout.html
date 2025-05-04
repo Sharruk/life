@@ -90,19 +90,10 @@
                             <!-- UPI Payment Details -->
                             <div id="upi-details" class="payment-details ms-4 mb-4 p-3 border rounded d-none">
                                 <div class="mb-3">
-                                    <p class="mb-2">Pay to Restaurant UPI ID:</p>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" value="{{ restaurant.upi_id }}" readonly>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="copyUpiId(this)">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
+                                    <label for="upi-id" class="form-label">UPI ID</label>
+                                    <input type="text" class="form-control" id="upi-id" placeholder="yourname@bank">
                                 </div>
-                                <div class="mb-3">
-                                    <label for="transaction-id" class="form-label">Enter Transaction ID</label>
-                                    <input type="text" class="form-control" id="transaction-id" name="transaction_id" required>
-                                </div>
-                                <small class="text-muted">Please enter the transaction ID after completing payment</small>
+                                <small class="text-muted">You will receive a payment request on your UPI app.</small>
                             </div>
                             
                             <!-- Wallet Payment -->

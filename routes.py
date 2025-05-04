@@ -1154,14 +1154,6 @@ def payment_checkout():
     if not session.get('cart'):
         flash('Your cart is empty.', 'info')
         return redirect(url_for('home'))
-        
-    restaurant_id = session.get('restaurant_id')
-    restaurant = Restaurant.query.get_or_404(restaurant_id)
-    
-    # Set default UPI ID if not set
-    if not restaurant.upi_id:
-        restaurant.upi_id = f"{restaurant.name.lower().replace(' ', '')}@ezfoodz"
-        db.session.commit()
     
     if request.method == 'POST':
         payment_method = request.form.get('payment_method', 'cod')
@@ -1183,20 +1175,8 @@ def payment_checkout():
             total_amount=total,
             delivery_address=delivery_address,
             payment_method=payment_method,
-            payment_status='pending'
+            payment_status='completed' if payment_method != 'cod' else 'pending'
         )
-        
-        # Verify UPI transaction
-        if payment_method == 'upi':
-            transaction_id = request.form.get('transaction_id')
-            if not transaction_id:
-                flash('Please enter transaction ID for UPI payment', 'danger')
-                return redirect(url_for('payment_checkout'))
-                
-            # Here you would normally verify the transaction with a UPI API
-            # For demo, we'll mark it as completed if transaction ID is provided
-            order.payment_status = 'completed'
-            order.transaction_id = transaction_id
         db.session.add(order)
         db.session.flush()  # Get order ID without committing
         

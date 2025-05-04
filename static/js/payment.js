@@ -161,19 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Copy UPI ID to clipboard
-    window.copyUpiId = function(button) {
-        const input = button.parentElement.querySelector('input');
-        input.select();
-        document.execCommand('copy');
-        
-        const icon = button.querySelector('i');
-        icon.className = 'fas fa-check';
-        setTimeout(() => {
-            icon.className = 'fas fa-copy';
-        }, 2000);
-    };
-    
     // Format card expiry with slash
     const cardExpiryInput = document.getElementById('card-expiry');
     if (cardExpiryInput) {
