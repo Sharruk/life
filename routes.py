@@ -1158,6 +1158,13 @@ def payment_checkout():
     if request.method == 'POST':
         payment_method = request.form.get('payment_method', 'cod')
         delivery_address = request.form.get('delivery_address', current_user.address)
+        transaction_id = request.form.get('transaction_id')
+        
+        # Verify transaction ID for UPI and wallet payments
+        if payment_method in ['upi', 'wallet'] and transaction_id:
+            if len(transaction_id) < 12 or not transaction_id.isalnum():
+                flash('Invalid transaction ID. Please try again.', 'danger')
+                return redirect(url_for('payment_checkout'))
         
         restaurant_id = session.get('restaurant_id')
         cart_items = session.get('cart', [])
